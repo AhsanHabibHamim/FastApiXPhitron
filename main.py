@@ -16,14 +16,20 @@ def load_data():
 
 @app.get("/")
 def read_root():
-    return {
-        "status": "Success",
-        "message": "FastAPI is running smoothly on Ubuntu"
-    }
+    return {"status": "Success", "message": "FastAPI is running smoothly on Ubuntu"}
 
 
+# -->> This is Function for showing all tudent Data
 @app.get("/view")
 def view_student_data():
-    return {
-        "student_data": load_data()
-    }
+    return {"student_data": load_data()}
+
+
+# -->> This is Function for showing specific student Data
+@app.get("/view/{student_id}")
+def view_student_data_by_id(student_id: str):
+    data = load_data()
+    if student_id in data:
+        return data[student_id]
+    else:
+        return "student Not Found"
