@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Path, Query
 import json
 
 app = FastAPI()
@@ -33,3 +33,24 @@ def view_student_data_by_id(student_id: str):
         return data[student_id]
     else:
         return "student Not Found"
+
+
+@app.get("/sort")
+def view_sorted_student(sorted_by: str = Query(..., description="")):
+    valid_fields = [
+        "age",
+        "class",
+        "roll",
+        "Math marks",
+        "English marks",
+        "Science marks",
+    ]
+    if sorted_by not in valid_fields:
+        raise "student Not Found"
+
+    data = load_data()
+
+    sorted_data = list(data.values())
+    sorted_data.sort(key=lambda x: x[sorted_by])
+    
+    return sorted_data
