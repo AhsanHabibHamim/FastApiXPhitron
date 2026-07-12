@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Path, Query
+from fastapi import FastAPI, Path, Query, Body
 import json
 
 app = FastAPI()
@@ -12,6 +12,11 @@ def load_data():
         return {"error": "student.json file not found"}
     except json.JSONDecodeError:
         return {"error": "Invalid JSON format"}
+
+
+def save_data(data):
+    with open("student.json", "w", encoding="utf-8") as file:
+        json.dump(data, file)
 
 
 @app.get("/")
@@ -36,7 +41,10 @@ def view_student_data_by_id(student_id: str):
 
 
 @app.get("/sort")
-def view_sorted_student(sorted_by: str = Query(..., description="")):
+def view_sorted_student(
+    sorted_by: str = Query(..., description=""),
+    order: str = Query("asc", description="choose asc & desc"),
+):
     valid_fields = [
         "age",
         "class",
@@ -47,10 +55,22 @@ def view_sorted_student(sorted_by: str = Query(..., description="")):
     ]
     if sorted_by not in valid_fields:
         raise "student Not Found"
+    if order not in ["asc", "desc"]:
+        raise "Input Valid Order Choose asc or desc"
 
     data = load_data()
 
+    sort_order = True if order == "desc" else False
+
     sorted_data = list(data.values())
-    sorted_data.sort(key=lambda x: x[sorted_by])
-    
+    sorted_data.sort(key=lambda x: x[sorted_by], reverse=sort_order)
+
     return sorted_data
+
+
+@app.post("/create")
+def create_student(student: dict = Body()):
+    data = load_data()
+    student_id = student["id"]
+    data[student_id] = student
+    save_data(data)
